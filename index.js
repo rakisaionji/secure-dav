@@ -14,6 +14,7 @@ const defaultOptions = {
     ivSize: 16,
     masterFilePath: 'data.json',
     dataFolderPath: '.data',
+    password: '1saw6rar4know8rar',
     hashAlgorithm: 'sha256',
     cipherAlgorithm: 'aes-256-cbc',
     multiUser: false
@@ -31,18 +32,14 @@ const hash = (path) => {
 }
 
 (async () => {
-    if(process.argv.length > 2) {
-        let configFilePath = process.argv[2].trim();
+    const configFilePath = 'config.json';
 
-        if(configFilePath === '-') {
-            configFilePath = readline.question('Configuration file: ');
-        }
-
+    if(fs.existsSync(configFilePath)) {
         const readFile = util.promisify(fs.readFile);
 
         console.log(`[ ] Loading the config file ${configFilePath}`);
 
-        options = JSON.parse(readFile(configFilePath));
+        options = JSON.parse(await readFile(configFilePath));
 
         for(const key in defaultOptions) {
             if(options[key] === undefined || options[key] === null) {
@@ -59,19 +56,15 @@ const hash = (path) => {
         options.dataFolderPath = `${options.dataFolderPath}-${hash(username)}`;
     }
 
-    const password = readline.question('Password: ', {
-        hideEchoBack: true
-    });
-
     console.log(`[ ] Starting...`);
-    start(options, password);
+    start(options, options.password);
 })();
 
 async function start(options, password) {
     const pbkdf2 = util.promisify(crypto.pbkdf2);
 
-    const finalPassword = await pbkdf2(password, 'master-key', options.masterKeyIteration, options.keySize, null)
-    const iv = await pbkdf2(password, 'master-iv', options.masterKeyIteration, options.ivSize, null)
+    const finalPassword = await pbkdf2(password, 'master-key', options.masterKeyIteration, options.keySize, options.hashAlgorithm)
+    const iv = await pbkdf2(password, 'master-iv', options.masterKeyIteration, options.ivSize, options.hashAlgorithm)
 
     options.webdavServerOptions = options.webdavServerOptions || {};
     options.webdavServerOptions.autoSave = { // Will automatically save the changes in the 'data.json' file
@@ -165,8 +158,8 @@ async function start(options, password) {
         r.constructor = CryptedFileSystem;
 
         const getCredentials = async (path) => {
-            const finalPassword = await pbkdf2(password, `key:${path.toString()}`, options.fileKeyIteration, options.keySize, null)
-            const iv = await pbkdf2(password, `iv:${path.toString()}`, options.fileKeyIteration, options.ivSize, null)
+            const finalPassword = await pbkdf2(password, `key:${path.toString()}`, options.fileKeyIteration, options.keySize, options.hashAlgorithm)
+            const iv = await pbkdf2(password, `iv:${path.toString()}`, options.fileKeyIteration, options.ivSize, options.hashAlgorithm)
 
             return {
                 finalPassword,

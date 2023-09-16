@@ -29,6 +29,7 @@ Key | Default value | Description
 **fileKeyIteration** | `1000` | Number of hash iteration to get the file-specific key/IV
 **keySize** | `32` | Encryption/descryption key size
 **ivSize** | `16` | Encryption/descryption IV size
+**password** | `'1saw6rar4know8rar'` | Password to use for encryption/decryption
 **cipherAlgorithm** | `'aes-256-cbc'` | Algorithm to use for encryption/decryption
 **hashAlgorithm** | `'sha256'` | Algorithm to use for the hashes
 **multiUser** | `false` | Define if the system must use a multi user system
