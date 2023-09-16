@@ -1,0 +1,8 @@
+{
+  "name": "secure-dav",
+  "version": "2.5.2",
+  "dependencies": {
+    "readline-sync": "^1.4.7",
+    "webdav-server": "^2.5.2"
+  }
+}
